@@ -11,7 +11,7 @@ using ExpenseTracking2._0.Api.Models;
 namespace ExpenseTracking2._0.Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class ExpenseController : Controller
 {
     private readonly DbContextHandler _context;
@@ -36,6 +36,18 @@ public class ExpenseController : Controller
         }
         return Ok(Item);
     }
+    [HttpPut("{id}")]
+    public async Task<ActionResult<Expense>> ExpenseById(int id, Expense expense)
+    {
+        var Item = await _context.Expenses.FirstOrDefaultAsync(x => x.Id == id);
+        if (Item == null)
+        {
+            return NotFound();
+        }
+        _context.Entry(Item).CurrentValues.SetValues(expense);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
     [HttpPost]
     public async Task<ActionResult<Expense>> Expense(Expense item) {
         _context.Expenses.Add(item);
@@ -51,7 +63,7 @@ public class ExpenseController : Controller
         {
             return NotFound();
         }
-        _context.Expenses.Select(p => p.Id == id).ExecuteDelete();
+        _context.Expenses.Remove(Item);
         await _context.SaveChangesAsync();
         return NoContent();
     }
